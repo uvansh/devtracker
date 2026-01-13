@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -17,10 +17,12 @@ import {
   ChevronRight,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const menuItems = [
-  { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
+  { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { name: 'Job Tracker', icon: Briefcase, path: '/jobs' },
   { name: 'LeetCode', icon: Code2, path: '/leetcode' },
   { name: 'Projects', icon: FolderKanban, path: '/projects' },
@@ -31,9 +33,16 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -150,6 +159,13 @@ export default function Sidebar() {
                   <Settings className="w-5 h-5" />
                   <span className="font-medium">Settings</span>
                 </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-red-500/10 text-white/70 hover:text-red-400"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">Logout</span>
+                </button>
               </div>
             </nav>
           </motion.aside>
@@ -241,6 +257,16 @@ export default function Sidebar() {
             <Settings className="w-5 h-5 flex-shrink-0" />
             {!isCollapsed && <span className="font-medium">Settings</span>}
           </Link>
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 rounded-xl transition-all duration-300 hover:bg-red-500/10 text-white/70 hover:text-red-400 ${
+              isCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3'
+            }`}
+            title={isCollapsed ? 'Logout' : undefined}
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            {!isCollapsed && <span className="font-medium">Logout</span>}
+          </button>
         </div>
       </div>
       </motion.aside>
