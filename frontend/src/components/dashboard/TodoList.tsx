@@ -71,30 +71,32 @@ export default function TodoList() {
       </div>
 
       {/* Add todo input */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap sm:flex-nowrap gap-2 mb-4">
         <input
           type="text"
           value={newTodo}
           onChange={(e) => setNewTodo(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && addTodo()}
           placeholder="Add a new task..."
-          className="flex-1 glass-input text-sm"
+          className="flex-1 min-w-0 glass-input text-sm"
         />
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
-          className="glass-select text-sm w-24"
-        >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        <button
-          onClick={addTodo}
-          className="glass-button-primary p-3"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
+            className="glass-select text-sm flex-1 sm:flex-none sm:w-24"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <button
+            onClick={addTodo}
+            className="glass-button-primary p-3 flex-shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Todo list */}

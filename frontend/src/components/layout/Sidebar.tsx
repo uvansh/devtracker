@@ -166,29 +166,31 @@ export default function Sidebar() {
       >
       <div className="flex flex-col h-full p-4">
         {/* Logo */}
-        <div className="flex items-center justify-between mb-8">
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Rocket className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold gradient-text">DevTracker</span>
-            </motion.div>
+        <div className={`flex items-center mb-8 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {isCollapsed ? (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center cursor-pointer" onClick={() => setIsCollapsed(false)}>
+              <Rocket className="w-6 h-6 text-white" />
+            </div>
+          ) : (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <Rocket className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-xl font-bold gradient-text">DevTracker</span>
+              </motion.div>
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            </>
           )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronLeft className="w-5 h-5" />
-            )}
-          </button>
         </div>
 
         {/* Navigation */}
@@ -199,14 +201,17 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 href={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
+                className={`flex items-center gap-3 rounded-xl transition-all duration-300 group ${
+                  isCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3'
+                } ${
                   isActive
                     ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/30 text-white'
                     : 'hover:bg-white/10 text-white/70 hover:text-white'
                 }`}
+                title={isCollapsed ? item.name : undefined}
               >
                 <item.icon
-                  className={`w-5 h-5 ${
+                  className={`w-5 h-5 flex-shrink-0 ${
                     isActive ? 'text-purple-400' : 'text-white/70 group-hover:text-white'
                   }`}
                 />
@@ -228,9 +233,12 @@ export default function Sidebar() {
         <div className="pt-4 border-t border-white/10">
           <Link
             href="/settings"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 text-white/70 hover:text-white"
+            className={`flex items-center gap-3 rounded-xl transition-all duration-300 hover:bg-white/10 text-white/70 hover:text-white ${
+              isCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3'
+            }`}
+            title={isCollapsed ? 'Settings' : undefined}
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-5 h-5 flex-shrink-0" />
             {!isCollapsed && <span className="font-medium">Settings</span>}
           </Link>
         </div>

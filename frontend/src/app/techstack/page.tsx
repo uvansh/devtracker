@@ -5,15 +5,45 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Trash2, Star } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import Modal from '@/components/ui/Modal';
+import Image from 'next/image';
 
 interface TechItem {
   id: number;
   name: string;
   category: string;
   proficiency: number;
-  icon: string;
+  icon: string; // slug for devicon
   color: string;
 }
+
+// Icon component that fetches from Devicon CDN
+const TechIcon = ({ icon, name, color }: { icon: string; name: string; color: string }) => {
+  const iconUrl = `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${icon}/${icon}-original.svg`;
+  const fallbackUrl = `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${icon}/${icon}-plain.svg`;
+  
+  return (
+    <div 
+      className="w-10 h-10 rounded-lg flex items-center justify-center p-2"
+      style={{ backgroundColor: `${color}20` }}
+    >
+      <img
+        src={iconUrl}
+        alt={name}
+        className="w-full h-full object-contain"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          if (target.src === iconUrl) {
+            target.src = fallbackUrl;
+          } else {
+            // Final fallback to a colored placeholder
+            target.style.display = 'none';
+            target.parentElement!.innerHTML = `<span class="text-lg font-bold" style="color: ${color}">${name.charAt(0)}</span>`;
+          }
+        }}
+      />
+    </div>
+  );
+};
 
 const categories = [
   'Languages',
@@ -39,22 +69,80 @@ const categoryColors: Record<string, string> = {
 
 const proficiencyLabels = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Expert'];
 
-// Mock data
+// Available tech icons (devicon slugs)
+const availableTechIcons: Record<string, { slug: string; color: string }> = {
+  'TypeScript': { slug: 'typescript', color: '#3178c6' },
+  'JavaScript': { slug: 'javascript', color: '#f7df1e' },
+  'Python': { slug: 'python', color: '#3776ab' },
+  'Java': { slug: 'java', color: '#007396' },
+  'C++': { slug: 'cplusplus', color: '#00599c' },
+  'C#': { slug: 'csharp', color: '#239120' },
+  'Go': { slug: 'go', color: '#00add8' },
+  'Rust': { slug: 'rust', color: '#000000' },
+  'Ruby': { slug: 'ruby', color: '#cc342d' },
+  'PHP': { slug: 'php', color: '#777bb4' },
+  'Swift': { slug: 'swift', color: '#fa7343' },
+  'Kotlin': { slug: 'kotlin', color: '#7f52ff' },
+  'React': { slug: 'react', color: '#61dafb' },
+  'Next.js': { slug: 'nextjs', color: '#000000' },
+  'Vue.js': { slug: 'vuejs', color: '#4fc08d' },
+  'Angular': { slug: 'angularjs', color: '#dd0031' },
+  'Svelte': { slug: 'svelte', color: '#ff3e00' },
+  'TailwindCSS': { slug: 'tailwindcss', color: '#38bdf8' },
+  'Bootstrap': { slug: 'bootstrap', color: '#7952b3' },
+  'Sass': { slug: 'sass', color: '#cc6699' },
+  'Node.js': { slug: 'nodejs', color: '#339933' },
+  'Express': { slug: 'express', color: '#000000' },
+  'FastAPI': { slug: 'fastapi', color: '#009688' },
+  'Django': { slug: 'django', color: '#092e20' },
+  'Flask': { slug: 'flask', color: '#000000' },
+  'Spring': { slug: 'spring', color: '#6db33f' },
+  'NestJS': { slug: 'nestjs', color: '#e0234e' },
+  'GraphQL': { slug: 'graphql', color: '#e10098' },
+  'PostgreSQL': { slug: 'postgresql', color: '#336791' },
+  'MySQL': { slug: 'mysql', color: '#4479a1' },
+  'MongoDB': { slug: 'mongodb', color: '#47a248' },
+  'Redis': { slug: 'redis', color: '#dc382d' },
+  'SQLite': { slug: 'sqlite', color: '#003b57' },
+  'Firebase': { slug: 'firebase', color: '#ffca28' },
+  'Docker': { slug: 'docker', color: '#2496ed' },
+  'Kubernetes': { slug: 'kubernetes', color: '#326ce5' },
+  'Jenkins': { slug: 'jenkins', color: '#d24939' },
+  'GitHub Actions': { slug: 'github', color: '#181717' },
+  'Terraform': { slug: 'terraform', color: '#7b42bc' },
+  'Git': { slug: 'git', color: '#f05032' },
+  'GitHub': { slug: 'github', color: '#181717' },
+  'VS Code': { slug: 'vscode', color: '#007acc' },
+  'Figma': { slug: 'figma', color: '#f24e1e' },
+  'Postman': { slug: 'postman', color: '#ff6c37' },
+  'Jira': { slug: 'jira', color: '#0052cc' },
+  'AWS': { slug: 'amazonwebservices', color: '#ff9900' },
+  'Azure': { slug: 'azure', color: '#0078d4' },
+  'GCP': { slug: 'googlecloud', color: '#4285f4' },
+  'Vercel': { slug: 'vercel', color: '#000000' },
+  'Netlify': { slug: 'netlify', color: '#00c7b7' },
+  'Heroku': { slug: 'heroku', color: '#430098' },
+  'Linux': { slug: 'linux', color: '#fcc624' },
+  'Nginx': { slug: 'nginx', color: '#009639' },
+  'Apache': { slug: 'apache', color: '#d22128' },
+};
+
+// Mock data with proper icon slugs
 const mockTechStack: TechItem[] = [
-  { id: 1, name: 'TypeScript', category: 'Languages', proficiency: 4, icon: '💙', color: '#3178c6' },
-  { id: 2, name: 'Python', category: 'Languages', proficiency: 4, icon: '🐍', color: '#3776ab' },
-  { id: 3, name: 'JavaScript', category: 'Languages', proficiency: 5, icon: '💛', color: '#f7df1e' },
-  { id: 4, name: 'React', category: 'Frontend', proficiency: 5, icon: '⚛️', color: '#61dafb' },
-  { id: 5, name: 'Next.js', category: 'Frontend', proficiency: 4, icon: '▲', color: '#000000' },
-  { id: 6, name: 'TailwindCSS', category: 'Frontend', proficiency: 5, icon: '🎨', color: '#38bdf8' },
-  { id: 7, name: 'Node.js', category: 'Backend', proficiency: 4, icon: '💚', color: '#339933' },
-  { id: 8, name: 'FastAPI', category: 'Backend', proficiency: 3, icon: '⚡', color: '#009688' },
-  { id: 9, name: 'PostgreSQL', category: 'Database', proficiency: 4, icon: '🐘', color: '#336791' },
-  { id: 10, name: 'MongoDB', category: 'Database', proficiency: 3, icon: '🍃', color: '#47a248' },
-  { id: 11, name: 'Docker', category: 'DevOps', proficiency: 3, icon: '🐳', color: '#2496ed' },
-  { id: 12, name: 'Git', category: 'Tools', proficiency: 5, icon: '📦', color: '#f05032' },
-  { id: 13, name: 'AWS', category: 'Cloud', proficiency: 3, icon: '☁️', color: '#ff9900' },
-  { id: 14, name: 'Vercel', category: 'Cloud', proficiency: 4, icon: '▲', color: '#000000' },
+  { id: 1, name: 'TypeScript', category: 'Languages', proficiency: 4, icon: 'typescript', color: '#3178c6' },
+  { id: 2, name: 'Python', category: 'Languages', proficiency: 4, icon: 'python', color: '#3776ab' },
+  { id: 3, name: 'JavaScript', category: 'Languages', proficiency: 5, icon: 'javascript', color: '#f7df1e' },
+  { id: 4, name: 'React', category: 'Frontend', proficiency: 5, icon: 'react', color: '#61dafb' },
+  { id: 5, name: 'Next.js', category: 'Frontend', proficiency: 4, icon: 'nextjs', color: '#000000' },
+  { id: 6, name: 'TailwindCSS', category: 'Frontend', proficiency: 5, icon: 'tailwindcss', color: '#38bdf8' },
+  { id: 7, name: 'Node.js', category: 'Backend', proficiency: 4, icon: 'nodejs', color: '#339933' },
+  { id: 8, name: 'FastAPI', category: 'Backend', proficiency: 3, icon: 'fastapi', color: '#009688' },
+  { id: 9, name: 'PostgreSQL', category: 'Database', proficiency: 4, icon: 'postgresql', color: '#336791' },
+  { id: 10, name: 'MongoDB', category: 'Database', proficiency: 3, icon: 'mongodb', color: '#47a248' },
+  { id: 11, name: 'Docker', category: 'DevOps', proficiency: 3, icon: 'docker', color: '#2496ed' },
+  { id: 12, name: 'Git', category: 'Tools', proficiency: 5, icon: 'git', color: '#f05032' },
+  { id: 13, name: 'AWS', category: 'Cloud', proficiency: 3, icon: 'amazonwebservices', color: '#ff9900' },
+  { id: 14, name: 'Vercel', category: 'Cloud', proficiency: 4, icon: 'vercel', color: '#000000' },
 ];
 
 export default function TechStackPage() {
@@ -66,8 +154,8 @@ export default function TechStackPage() {
     name: '',
     category: 'Languages',
     proficiency: 3,
-    icon: '💻',
-    color: '#8b5cf6',
+    icon: 'javascript',
+    color: '#f7df1e',
   });
 
   const filteredTechStack = techStack.filter((tech) => {
@@ -96,8 +184,8 @@ export default function TechStackPage() {
       name: '',
       category: 'Languages',
       proficiency: 3,
-      icon: '💻',
-      color: '#8b5cf6',
+      icon: 'javascript',
+      color: '#f7df1e',
     });
   };
 
@@ -221,7 +309,7 @@ export default function TechStackPage() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{tech.icon}</span>
+                        <TechIcon icon={tech.icon} name={tech.name} color={tech.color} />
                         <div>
                           <h4 className="font-semibold">{tech.name}</h4>
                           <p className="text-xs text-white/40">{tech.category}</p>
@@ -281,7 +369,9 @@ export default function TechStackPage() {
       {/* Empty State */}
       {Object.keys(groupedTechStack).length === 0 && (
         <div className="glass-card p-12 text-center">
-          <span className="text-6xl mb-4 block">💻</span>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+            <Plus className="w-8 h-8 text-purple-400" />
+          </div>
           <h3 className="text-xl font-semibold mb-2">No technologies found</h3>
           <p className="text-white/60 mb-6">
             {searchQuery || categoryFilter !== 'all'
@@ -304,19 +394,70 @@ export default function TechStackPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         title="Add Technology"
+        size="lg"
       >
         <div className="space-y-4">
+          {/* Tech Selector */}
           <div>
-            <label className="block text-sm text-white/60 mb-2">Name</label>
+            <label className="block text-sm text-white/60 mb-2">Select Technology</label>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-48 overflow-y-auto p-2 bg-white/5 rounded-xl">
+              {Object.entries(availableTechIcons).map(([name, { slug, color }]) => (
+                <button
+                  key={name}
+                  onClick={() => setNewTech({ ...newTech, name, icon: slug, color })}
+                  className={`p-2 rounded-lg flex flex-col items-center gap-1 transition-all ${
+                    newTech.name === name
+                      ? 'bg-purple-500/30 border border-purple-400/50'
+                      : 'hover:bg-white/10 border border-transparent'
+                  }`}
+                  title={name}
+                >
+                  <img
+                    src={`https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${slug}/${slug}-original.svg`}
+                    alt={name}
+                    className="w-8 h-8 object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${slug}/${slug}-plain.svg`;
+                    }}
+                  />
+                  <span className="text-[10px] text-white/60 truncate w-full text-center">{name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Selected Tech Preview */}
+          {newTech.name && (
+            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+              <TechIcon icon={newTech.icon} name={newTech.name} color={newTech.color} />
+              <div>
+                <p className="font-medium">{newTech.name}</p>
+                <p className="text-xs text-white/40">Selected technology</p>
+              </div>
+            </div>
+          )}
+
+          {/* Or Custom Name */}
+          <div>
+            <label className="block text-sm text-white/60 mb-2">Or enter custom name</label>
             <input
               type="text"
               value={newTech.name}
-              onChange={(e) => setNewTech({ ...newTech, name: e.target.value })}
+              onChange={(e) => {
+                const name = e.target.value;
+                const techInfo = availableTechIcons[name];
+                if (techInfo) {
+                  setNewTech({ ...newTech, name, icon: techInfo.slug, color: techInfo.color });
+                } else {
+                  setNewTech({ ...newTech, name });
+                }
+              }}
               className="w-full glass-input"
               placeholder="e.g., React, Python, Docker"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-white/60 mb-2">Category</label>
               <select
@@ -332,17 +473,25 @@ export default function TechStackPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-white/60 mb-2">Icon (Emoji)</label>
-              <input
-                type="text"
-                value={newTech.icon}
-                onChange={(e) => setNewTech({ ...newTech, icon: e.target.value })}
-                className="w-full glass-input text-center text-2xl"
-                placeholder="💻"
-                maxLength={2}
-              />
+              <label className="block text-sm text-white/60 mb-2">Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={newTech.color}
+                  onChange={(e) => setNewTech({ ...newTech, color: e.target.value })}
+                  className="w-12 h-10 rounded-lg cursor-pointer bg-transparent border-0"
+                />
+                <input
+                  type="text"
+                  value={newTech.color}
+                  onChange={(e) => setNewTech({ ...newTech, color: e.target.value })}
+                  className="flex-1 glass-input"
+                  placeholder="#8b5cf6"
+                />
+              </div>
             </div>
           </div>
+
           <div>
             <label className="block text-sm text-white/60 mb-2">
               Proficiency Level: {proficiencyLabels[newTech.proficiency - 1]}
@@ -365,29 +514,16 @@ export default function TechStackPage() {
               ))}
             </div>
           </div>
-          <div>
-            <label className="block text-sm text-white/60 mb-2">Color</label>
-            <div className="flex gap-2">
-              <input
-                type="color"
-                value={newTech.color}
-                onChange={(e) => setNewTech({ ...newTech, color: e.target.value })}
-                className="w-12 h-12 rounded-lg cursor-pointer bg-transparent border-0"
-              />
-              <input
-                type="text"
-                value={newTech.color}
-                onChange={(e) => setNewTech({ ...newTech, color: e.target.value })}
-                className="flex-1 glass-input"
-                placeholder="#8b5cf6"
-              />
-            </div>
-          </div>
+
           <div className="flex justify-end gap-3 mt-6">
             <button onClick={() => setIsAddModalOpen(false)} className="glass-button">
               Cancel
             </button>
-            <button onClick={handleAddTech} className="glass-button-primary">
+            <button 
+              onClick={handleAddTech} 
+              className="glass-button-primary"
+              disabled={!newTech.name}
+            >
               Add Technology
             </button>
           </div>
